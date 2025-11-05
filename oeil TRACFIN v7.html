@@ -1,0 +1,583 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Outil d'Evaluation Intelligente Larvatus</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;900&display=swap" rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+            /* NOUVEAU FOND SOMBRE */
+            background-color: #0F172A; /* Ardoise 900 */
+            color: #CBD5E1; /* Ardoise 300 */
+        }
+        
+        /* Styles pour l'accordéon */
+        .accordion-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.5s ease-out;
+        }
+        .accordion-button svg {
+             transition: transform 0.3s;
+        }
+
+        /* Styles pour le MODAL (FENÊTRE FLOTTANTE) */
+        .modal-backdrop {
+            position: fixed;
+            inset: 0;
+            background-color: rgba(0, 0, 0, 0.8); /* Fond semi-transparent plus sombre */
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 50;
+            padding: 1rem;
+        }
+        .modal-container {
+            /* NOUVEAU FOND SOMBRE POUR MODAL */
+            background-color: #1E293B; /* Ardoise 800 */
+            border-radius: 0.5rem;
+            box-shadow: 0 10px 15px -3px rgba(0, 0, 0, 0.1), 0 4px 6px -2px rgba(0, 0, 0, 0.05);
+            width: 100%;
+            max-width: 4xl; 
+            max-height: 90vh; 
+            overflow-y: auto; 
+            display: flex;
+            flex-direction: column;
+            border: 1px solid #334155; /* Bordure Ardoise 700 */
+        }
+        .modal-close-btn {
+            font-size: 2.5rem;
+            font-weight: 300;
+            line-height: 1;
+            color: #64748B; /* Ardoise 500 */
+            background: none;
+            border: none;
+            cursor: pointer;
+        }
+        .modal-close-btn:hover {
+            color: #E2E8F0; /* Ardoise 200 */
+        }
+
+        /* Amélioration des inputs sombres */
+        .dark-input {
+            background-color: #0F172A; /* Ardoise 900 */
+            border-color: #334155; /* Ardoise 700 */
+            color: #E2E8F0; /* Ardoise 200 */
+        }
+        .dark-input::placeholder {
+            color: #475569; /* Ardoise 600 */
+        }
+        .dark-input:focus {
+            outline: none;
+            ring-width: 2px;
+            ring-color: #FFD700; /* Or Barrière */
+            border-color: #FFD700;
+        }
+        .dark-checkbox {
+            background-color: #0F172A;
+            border-color: #334155;
+            color: #FFD700; /* Coche Or */
+        }
+        .dark-checkbox:focus {
+             ring-color: #FFD700;
+        }
+
+    </style>
+</head>
+<body class="text-slate-300">
+
+    <div class="container mx-auto p-4 md:p-8">
+
+        <header class="text-center mb-1 md:mb-6">
+<img src="https://i.ibb.co/bjJGwNWY/BARRIERE-PRISMA.png"" alt="Logo BARRIERE " class="mx-auto w-40 md:w-48 md-4"">
+            <h1 class="text-4xl md:text-5xl font-black text-sky-400 mb-2">Outil d'Evaluation Intelligente Larvatus</h1>
+            <p class="text-xl md:text-2xl text-sky-500">Un outil d'aide à la décision LCB-FT</p>
+        </header>
+
+        <section id="criteres" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center mb-10 text-sky-400">Rappel des critères de vigilance</h2>
+            <p class="text-center max-w-3xl mx-auto text-slate-400 mb-8">Pour vous aider dans la rédaction de votre cas à analyser, consulter les principaux critères de vigilance regroupés en quatre grandes familles. Cliquez sur le bouton ci-dessous pour les consulter.</p>
+            
+            <div class="text-center">
+                <button id="showCriteriaModalBtn" class="bg-transparent border border-[#FFD700] text-[#FFD700] font-bold py-3 px-6 rounded-lg shadow-md hover:bg-[#FFD700] hover:text-[#0F172A] transition-colors">
+                    <span class="mr-2">📋</span> Liste Thématique
+                </button>
+            </div>
+            
+        </section>
+
+        <section id="analyse" class="mb-12 md:mb-20">
+            <h2 class="text-3xl font-bold text-center mb-10 text-sky-400">Analyse de Cas Intelligente</h2>
+ <p class="text-center max-w-3xl mx-auto text-slate-400 mb-8">Pour améliorer l'analyse de votre cas, vous pouvez renseigner des informations clés.</p>
+            
+            
+            <div class="text-center mb-8">
+                <button id="showOptionalInfoBtn" class="bg-transparent border border-sky-500 text-sky-500 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-sky-500 hover:text-white transition-colors">
+                    <span class="mr-2">➕</span> Renseigner les informations clés
+                </button>
+            </div>
+
+            <div class="grid grid-cols-1 md:max-w-3xl mx-auto">
+                <div class="bg-[#1E293B] p-6 rounded-lg shadow-lg shadow-black/30">
+                    
+                    <h3 class="text-2xl font-bold text-sky-400 mb-4">Analyse de Cas ✨</h3>
+                    <p class="text-slate-400 mb-4">Décrivez une situation que vous avez observée, et l'IA vous fournira une analyse des risques potentiels.</p>
+                    <textarea id="caseInput" class="dark-input w-full h-32 p-4 rounded-lg border resize-none mb-4" placeholder="Décrivez la situation (ex: un client a échangé 5 000€ de jetons sans jouer...)."></textarea>
+                    <button id="analyzeCaseBtn" class="w-full bg-[#FFD700] text-[#0F172A] font-bold py-3 px-6 rounded-lg shadow-md hover:bg-opacity-80 transition-colors">
+                        Analyser le Cas
+                    </button>
+                    <div id="analysisOutput" class="mt-6 p-4 rounded-lg bg-[#0F172A] border border-slate-700 text-slate-200 hidden"></div>
+
+                    <div id="tracfin-step-1" class="hidden mt-6 border-t border-slate-700 pt-6">
+                        <h3 class="text-2xl font-bold text-sky-400 mb-4">Traitement du Renseignement - Action et Conclusion FINale - TRACFIN</h3>
+                        <p class="text-slate-400 mb-4">Souhaitez-vous modifier votre texte ou continuer l'analyse ?</p>
+                        <div class="flex flex-col sm:flex-row gap-4">
+                            <button id="modifyCaseBtn" class="w-full bg-slate-700 text-slate-200 font-bold py-3 px-6 rounded-lg shadow-md hover:bg-slate-600 transition-colors">
+                                Modifier le Scénario
+                            </button>
+                            <button id="continueToReportBtn" class="w-full bg-[#FFD700] text-[#0F172A] font-bold py-3 px-6 rounded-lg shadow-md hover:bg-opacity-80 transition-colors">
+                                Continuer vers Rapport
+                            </button>
+                        </div>
+                    </div>
+
+                    <div id="tracfin-step-2" class="hidden mt-6 border-t border-slate-700 pt-6">
+                        <h3 class="text-2xl font-bold text-sky-400 mb-4">Rapport Interne ✨</h3>
+                        <p class="text-slate-400 mb-4">Le scénario a été copié. Décrivez l'incident, et l'IA rédigera un brouillon d'e-mail structuré pour le Responsable Conformité.</p>
+                        <textarea id="incidentInput" class="dark-input w-full h-32 p-4 rounded-lg border resize-none mb-4" placeholder="Ex: Client Y a échangé 5k€ de jetons sans jouer..."></textarea>
+                        <button id="draftReportBtn" class="w-full bg-[#FFD700] text-[#0F172A] font-bold py-3 px-6 rounded-lg shadow-md hover:bg-opacity-80 transition-colors">
+                            Ébaucher le Rapport
+                        </button>
+                        <div id="reportOutput" class="mt-6 p-4 rounded-lg bg-[#0F172A] border border-slate-700 text-slate-200 hidden"></div>
+                    </div>
+
+                </div>
+            </div>
+        </section>
+
+
+        <footer class="text-center border-t pt-8 mt-12 border-slate-700">
+            <p class="text-sm text-slate-500 mt-4">Outil d'Evaluation Intelligente Larvatus - Développé pour la Direction Conformité</p>
+        </footer>
+
+    </div>
+
+    <div id="criteriaModal" class="modal-backdrop hidden">
+        <div class="modal-container">
+            <div class="flex justify-between items-center p-5 border-b border-slate-700 bg-[#0F172A] rounded-t-lg">
+                <h3 class="text-2xl font-bold text-sky-400">Rappel des critères de vigilance</h3>
+                <button id="closeCriteriaModalBtn" class="modal-close-btn">&times;</button>
+            </div>
+            
+            <div class="p-6">
+                <div id="accordion-container-modal" class="space-y-4 max-w-4xl mx-auto">
+                    </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="optionalInfoModal" class="modal-backdrop hidden">
+        <div class="modal-container">
+            <div class="flex justify-between items-center p-5 border-b border-slate-700 bg-[#0F172A] rounded-t-lg">
+                <h3 class="text-2xl font-bold text-sky-400">Informations Complémentaires (Optionnel)</h3>
+                <button id="closeOptionalInfoModalBtn" class="modal-close-btn">&times;</button>
+            </div>
+            
+            <div class="p-6 space-y-4">
+                <p class="text-slate-400">Ces informations, si disponibles, permettent à l'IA d'affiner son analyse de risque.</p>
+                
+                <div class="space-y-4">
+                    <div>
+                        <label for="clientNationality" class="block text-sm font-medium text-slate-300 mb-1">Nationalité du client</label>
+                        <input type="text" id="clientNationality" class="dark-input w-full p-2 border rounded-lg" placeholder="Ex: Française, Russe...">
+                    </div>
+                    
+                    <div>
+                        <label for="clientOccupation" class="block text-sm font-medium text-slate-300 mb-1">Emploi, Activité, ...du client</label>
+                        <input type="text" id="clientOccupation" class="dark-input w-full p-2 border rounded-lg" placeholder="Ex: Gérant de société, Sans profession...">
+                    </div>
+                    
+                    <div>
+                        <label for="clientIncomeSource" class="block text-sm font-medium text-slate-300 mb-1">Source de revenu principale</label>
+                        <input type="text" id="clientIncomeSource" class="dark-input w-full p-2 border rounded-lg" placeholder="Ex: Salaires, Revenus fonciers...">
+                    </div>
+                    
+                    <div class="flex items-center space-x-4">
+                        <div class="flex items-center">
+                            <input id="clientUsesCash" type="checkbox" class="dark-checkbox h-4 w-4 rounded">
+                            <label for="clientUsesCash" class="ml-2 block text-sm text-slate-300">Le client utilise-t-il principalement des espèces ?</label>
+                        </div>
+                        <div class="flex items-center">
+                            <input id="clientPlaysElectronicRoulette" type="checkbox" class="dark-checkbox h-4 w-4 rounded">
+                            <label for="clientPlaysElectronicRoulette" class="ml-2 block text-sm text-slate-300">Le client joue-t-il principalement à la RAE ?</label>
+                        </div>
+                    </div>
+                    
+                    <div>
+                        <label for="clientPublicInfo" class="block text-sm font-medium text-slate-300 mb-1">Information publique sur le client</label>
+                        <textarea id="clientPublicInfo" rows="3" class="dark-input w-full p-2 border rounded-lg" placeholder="Ex: Mentionné dans un article de presse, connu défavorablement..."></textarea>
+                    </div>
+                </div>
+
+                <div class="pt-4 border-t border-slate-700 text-right">
+                    <button id="saveOptionalInfoModalBtn" class="bg-[#FFD700] text-[#0F172A] font-bold py-2 px-5 rounded-lg shadow-md hover:bg-opacity-80 transition-colors">
+                        Fermer
+                    </button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+
+    <script>
+        // Données pour l'accordéon (Critères Vigilance)
+        const vigilanceCriteria = [
+            {
+                title: "Critères liés à l'Identité et au Comportement",
+                icon: '👤',
+                criteria: [
+                    "1. Refus de présenter une pièce d'identité ou présentation d'un document suspect.",
+                    "2. Client accompagné par un tiers qui semble lui donner des instructions.",
+                    "3. Comportement nerveux, fuyant, ou inhabituellement curieux sur les procédures de contrôle.",
+                    "4. Domiciliation dans un pays à risque (listes GAFI/UE).",
+                    "5. Utilisation d'un prête-nom ou tentative d'usurpation d'identité."
+                ]
+            },
+            {
+                title: "Critères liés aux Opérations Financières",
+                icon: '💶',
+                criteria: [
+                    "6. Opérations de change fractionnées pour rester sous le seuil de 2000€ (smurfing).",
+                    "7. Dépôt de sommes importantes en espèces, surtout en petites coupures ou de mauvaise qualité.",
+                    "8. Demande d'un paiement par chèque pour un gain non cohérent avec l'activité de jeu.",
+                    "9. Échange de grosses coupures contre des petites sans intention de jouer.",
+                    "10. Utilisation de multiples instruments de paiement (plusieurs cartes bancaires, comptes...).",
+                    "11. Opérations financières sans logique économique apparente."
+                ]
+            },
+            {
+                title: "Critères liés à l'Activité de Jeu",
+                icon: '🎲',
+                criteria: [
+                    "12. Le 'non-jeu' : Achat de jetons/plaques pour une valeur élevée suivi d'un jeu minime avant encaissement.",
+                    "13. Le 'chip dumping' : Perte volontaire et systématique de jetons au profit d'un autre joueur complice.",
+                    "14. Gains répétés et anormaux sur des jeux de pur hasard.",
+                    "15. Incohérence between les sommes jouées et la connaissance apparente des règles du jeu.",
+                    "16. Refus d'encaisser ses gains ou tentative de les céder à un tiers."
+                ]
+            },
+            {
+                title: "Critères Généraux et Contextuels",
+                icon: '🌍',
+                criteria: [
+                    "17. Client identifié comme Personne Exposée Politiquement (PEP).",
+                    "18. Inadéquation flagrante entre le train de vie apparent du client et les sommes engagées.",
+                    "19. Client faisant l'objet d'une couverture médiatique négative ou connu pour des activités illicites.",
+                    "20. Tentative de corruption ou d'intimidation du personnel."
+                ]
+            }
+        ];
+
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            // --- LOGIQUE POUR MODAL 1 : CRITÈRES DE VIGILANCE ---
+            
+            const showCriteriaModalBtn = document.getElementById('showCriteriaModalBtn');
+            const closeCriteriaModalBtn = document.getElementById('closeCriteriaModalBtn');
+            const criteriaModal = document.getElementById('criteriaModal');
+            const accordionContainer = document.getElementById('accordion-container-modal'); 
+
+            if(accordionContainer) {
+                vigilanceCriteria.forEach((item) => {
+                    const div = document.createElement('div');
+                    // NOUVEAU STYLE ACCORDÉON SOMBRE
+                    div.className = 'border border-slate-700 rounded-lg bg-[#1E293B] shadow-sm';
+                    div.innerHTML = `
+                        <button class="accordion-button w-full p-5 text-left flex justify-between items-center bg-[#0F172A] rounded-t-lg">
+                            <span class="text-lg font-bold text-sky-400"><span class="mr-3">${item.icon}</span>${item.title}</span>
+                            <svg class="w-6 h-6 shrink-0 text-sky-400" fill="none" stroke="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7"></path></svg>
+                        </button>
+                        <div class="accordion-content">
+                            <div class="p-5 pt-4">
+                                <ul class="space-y-2">
+                                    ${item.criteria.map(c => `<li class="text-slate-300">${c}</li>`).join('')}
+                                </ul>
+                            </div>
+                        </div>
+                    `;
+                    accordionContainer.appendChild(div);
+                });
+                
+                accordionContainer.addEventListener('click', (event) => {
+                    const button = event.target.closest('.accordion-button');
+                    if (!button) return;
+
+                    const content = button.nextElementSibling;
+                    const svg = button.querySelector('svg');
+
+                    if (content.style.maxHeight) {
+                        content.style.maxHeight = null;
+                        svg.style.transform = 'rotate(0deg)';
+                        button.classList.remove('rounded-b-lg');
+                    } else {
+                        accordionContainer.querySelectorAll('.accordion-content').forEach(el => {
+                            el.style.maxHeight = null;
+                            el.previousElementSibling.querySelector('svg').style.transform = 'rotate(0deg)';
+                            el.previousElementSibling.classList.remove('rounded-b-lg');
+                        });
+                        content.style.maxHeight = content.scrollHeight + "px";
+                        svg.style.transform = 'rotate(180deg)';
+                        setTimeout(() => {
+                           if (content.style.maxHeight) {
+                               button.classList.add('rounded-b-lg');
+                           }
+                        }, 500);
+                    }
+                });
+            }
+
+            if (showCriteriaModalBtn) {
+                showCriteriaModalBtn.addEventListener('click', () => {
+                    criteriaModal.classList.remove('hidden');
+                });
+            }
+            if (closeCriteriaModalBtn) {
+                closeCriteriaModalBtn.addEventListener('click', () => {
+                    criteriaModal.classList.add('hidden');
+                });
+            }
+            if (criteriaModal) {
+                criteriaModal.addEventListener('click', (event) => {
+                    if (event.target === criteriaModal) {
+                        criteriaModal.classList.add('hidden');
+                    }
+                });
+            }
+
+
+            // --- LOGIQUE POUR MODAL 2 : INFORMATIONS COMPLÉMENTAIRES ---
+            
+            const showOptionalInfoBtn = document.getElementById('showOptionalInfoBtn');
+            const closeOptionalInfoModalBtn = document.getElementById('closeOptionalInfoModalBtn');
+            const saveOptionalInfoModalBtn = document.getElementById('saveOptionalInfoModalBtn');
+            const optionalInfoModal = document.getElementById('optionalInfoModal');
+
+            if (showOptionalInfoBtn) {
+                showOptionalInfoBtn.addEventListener('click', () => {
+                    optionalInfoModal.classList.remove('hidden');
+                });
+            }
+            if (closeOptionalInfoModalBtn) {
+                closeOptionalInfoModalBtn.addEventListener('click', () => {
+                    optionalInfoModal.classList.add('hidden');
+                });
+            }
+             if (saveOptionalInfoModalBtn) {
+                saveOptionalInfoModalBtn.addEventListener('click', () => {
+                    optionalInfoModal.classList.add('hidden');
+                });
+            }
+            if (optionalInfoModal) {
+                optionalInfoModal.addEventListener('click', (event) => {
+                    if (event.target === optionalInfoModal) {
+                        optionalInfoModal.classList.add('hidden');
+                    }
+                });
+            }
+
+
+            // --- LOGIQUE POUR PARTIE 2 : WORKFLOW D'ANALYSE ---
+
+            const analyzeCaseBtn = document.getElementById('analyzeCaseBtn');
+            const caseInput = document.getElementById('caseInput');
+            const analysisOutput = document.getElementById('analysisOutput');
+            const tracfinStep1 = document.getElementById('tracfin-step-1');
+            const tracfinStep2 = document.getElementById('tracfin-step-2');
+            const modifyCaseBtn = document.getElementById('modifyCaseBtn');
+            const continueToReportBtn = document.getElementById('continueToReportBtn');
+            const draftReportBtn = document.getElementById('draftReportBtn');
+            const incidentInput = document.getElementById('incidentInput');
+            const reportOutput = document.getElementById('reportOutput');
+
+
+            async function callGeminiApi(prompt) {
+                const apiKey = "AIzaSyDB6hRtkw2KandEIKACrhKyg2dcBS_TSAA"; 
+                // URL API Corrigée (celle de votre fichier d'origine)
+                const apiUrl = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-preview-05-20:generateContent?key=${apiKey}`;
+
+                if (apiKey === "" || apiKey.includes("INSERT")) {
+                     throw new Error("Clé API manquante ou incorrecte.");
+                }
+
+                let chatHistory = [];
+                chatHistory.push({ role: "user", parts: [{ text: prompt }] });
+                const payload = { contents: chatHistory };
+
+                const response = await fetch(apiUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify(payload)
+                });
+                
+                const result = await response.json();
+                
+                if (result.candidates && result.candidates.length > 0 && result.candidates[0].content && result.candidates[0].content.parts && result.candidates[0].content.parts.length > 0) {
+                    return result.candidates[0].content.parts[0].text;
+                } else {
+                    if (result.error && result.error.message) {
+                        if (result.error.message.includes("API key not valid")) {
+                             throw new Error(`Erreur API: Clé API non valide. Vérifiez la clé dans le script.`);
+                        }
+                        throw new Error(`Erreur API: ${result.error.message}`);
+                    }
+                    console.error("Réponse API inattendue :", result);
+                    throw new Error("Réponse de l'API non structurée ou vide.");
+                }
+            }
+
+            // Fonction d'analyse (utilise les champs optionnels)
+            async function analyzeCase() {
+                const caseText = caseInput.value.trim();
+                if (caseText === '') {
+                    analysisOutput.innerHTML = `<p class="text-red-500">Veuillez décrire un cas à analyser.</p>`;
+                    analysisOutput.classList.remove('hidden');
+                    return;
+                }
+                
+                tracfinStep1.classList.add('hidden');
+                tracfinStep2.classList.add('hidden');
+                reportOutput.classList.add('hidden');
+                analysisOutput.innerHTML = `<p class="text-center text-gray-500">Analyse du cas en cours... </p>`;
+                analysisOutput.classList.remove('hidden');
+
+                // Récupération des informations complémentaires
+                const nationality = document.getElementById('clientNationality').value.trim();
+                const occupation = document.getElementById('clientOccupation').value.trim();
+                const incomeSource = document.getElementById('clientIncomeSource').value.trim();
+                const usesCash = document.getElementById('clientUsesCash').checked;
+                const playsER = document.getElementById('clientPlaysElectronicRoulette').checked;
+                const publicInfo = document.getElementById('clientPublicInfo').value.trim();
+
+                // Construction du contexte optionnel
+                let contextText = "";
+                if (nationality) contextText += `\n- Nationalité: ${nationality}`;
+                if (occupation) contextText += `\n- Emploi/Activité: ${occupation}`;
+                if (incomeSource) contextText += `\n- Source de revenus: ${incomeSource}`;
+                if (usesCash) contextText += `\n- Utilise principalement des espèces.`;
+                if (playsER) contextText += `\n- Joue principalement à la Roulette Anglaise Electronique (RAE).`;
+                if (publicInfo) contextText += `\n- Informations publiques: ${publicInfo}`;
+
+                const prompt = `En tant qu'expert en LCB-FT pour un casino du groupe Barrière, analyse le scénario suivant pour détecter les signaux d'alerte de blanchiment de capitaux.
+
+                Voici le scénario : "${caseText}"
+
+                Prends également en compte les informations contextuelles suivantes sur le client (si fournies) : ${contextText ? contextText : "Aucune information contextuelle fournie."}
+
+                Fournis une analyse claire, en soulignant les points de vigilance (ex: critère 12 'non-jeu', etc.) et en suggérant les prochaines étapes (vigilance renforcée, déclaration de soupçon...). Va droit au but et utilise des puces pour les points clés.`;
+                
+                try {
+                    const text = await callGeminiApi(prompt);
+                    let htmlText = text.replace(/\n/g, '<br>');
+                    htmlText = htmlText.replace(/\* (.*?)(<br>|$)/g, '<li class="ml-4 list-disc">$1</li>');
+                    htmlText = htmlText.replace(/(<li>.*?<\/li>)/g, '<ul>$1</ul>');
+                    htmlText = htmlText.replace(/<\/ul><br><ul>/g, ''); 
+
+                    analysisOutput.innerHTML = htmlText;
+                    tracfinStep1.classList.remove('hidden'); 
+                } catch (error) {
+                    analysisOutput.innerHTML = `<p class="text-red-600">Erreur : Impossible d'analyser le cas. (${error.message})</p>`;
+                    tracfinStep1.classList.add('hidden');
+                    tracfinStep2.classList.add('hidden');
+                }
+            }
+
+            // Fonction de rapport (MAJ pour utiliser les champs optionnels)
+            async function draftInternalEmail() {
+                const incidentText = incidentInput.value.trim();
+                if (incidentText === '') {
+                    reportOutput.innerHTML = `<p class="text-red-500">Veuillez décrire l'incident à rapporter.</p>`;
+                    reportOutput.classList.remove('hidden');
+                    return;
+                }
+                
+                reportOutput.classList.add('hidden');
+                reportOutput.innerHTML = `<p class="text-center text-gray-500">Rédaction du brouillon en cours... </p>`;
+                reportOutput.classList.remove('hidden');
+
+                // --- DÉBUT DE LA MODIFICATION ---
+                // Récupération du contexte pour l'e-mail
+                const nationality = document.getElementById('clientNationality').value.trim();
+                const occupation = document.getElementById('clientOccupation').value.trim();
+                const incomeSource = document.getElementById('clientIncomeSource').value.trim();
+                const usesCash = document.getElementById('clientUsesCash').checked;
+                const playsER = document.getElementById('clientPlaysElectronicRoulette').checked;
+                const publicInfo = document.getElementById('clientPublicInfo').value.trim();
+
+                let contextText = "\n\nInformations complémentaires sur le client :";
+                let hasContext = false;
+                if (nationality) { contextText += `\n- Nationalité: ${nationality}`; hasContext = true; }
+                if (occupation) { contextText += `\n- Emploi/Activité: ${occupation}`; hasContext = true; }
+                if (incomeSource) { contextText += `\n- Source de revenus: ${incomeSource}`; hasContext = true; }
+                if (usesCash) { contextText += `\n- Utilisation principale d'espèces.`; hasContext = true; }
+                if (playsER) { contextText += `\n- Joueur principal de RAE.`; hasContext = true; }
+                if (publicInfo) { contextText += `\n- Informations publiques: ${publicInfo}`; hasContext = true; }
+                
+                if (!hasContext) {
+                    contextText = ""; // Ne pas inclure la section si elle est vide
+                }
+                // --- FIN DE LA MODIFICATION ---
+
+
+                const prompt = `Rédige un brouillon d'e-mail interne formel et structuré destiné au Responsable Conformité (RC) pour signaler l'incident suspect suivant : "${incidentText}".
+                
+                Intègre les informations contextuelles suivantes dans le corps de l'e-mail, si elles sont fournies :
+                ${contextText}
+
+                Le brouillon doit inclure :
+                1. Un objet clair (ex: Rapport d'incident LCB-FT - [Date et Lieu/Casino]).
+                2. Une introduction polie.
+                3. Une section "Description de l'incident" (incluant les détails du scénario ET les infos contextuelles).
+                4. Une section "Motif de la suspicion" (Quel pilier LCB-FT est concerné).
+                5. Une conclusion suggérant une vigilance renforcée.
+                Ne mets pas de balises HTML, juste le texte de l'e-mail.`;
+                
+                try {
+                    const text = await callGeminiApi(prompt);
+                    reportOutput.innerHTML = text.replace(/\n/g, '<br>');
+                } catch (error) {
+                    reportOutput.innerHTML = `<p class="text-red-600">Erreur : Impossible de générer le rapport. (${error.message})</D>`;
+                }
+            }
+
+            // Écouteurs d'événements
+            if(analyzeCaseBtn) {
+                analyzeCaseBtn.addEventListener('click', analyzeCase);
+            }
+            if(modifyCaseBtn) {
+                modifyCaseBtn.addEventListener('click', () => {
+                    tracfinStep1.classList.add('hidden');
+                    analysisOutput.classList.add('hidden');
+                    analysisOutput.innerHTML = '';
+                    caseInput.focus();
+                });
+            }
+            if(continueToReportBtn) {
+                continueToReportBtn.addEventListener('click', () => {
+                    tracfinStep1.classList.add('hidden');
+                    tracfinStep2.classList.remove('hidden');
+                    const caseText = caseInput.value.trim();
+                    incidentInput.value = caseText;
+                });
+            }
+            if(draftReportBtn) {
+                draftReportBtn.addEventListener('click', draftInternalEmail);
+            }
+        });
+    </script>
+</body>
+</html>
